@@ -26,6 +26,18 @@ namespace Calc.Views.Home
                 Description = "Dzięki wzorowi Lorenza możemy obliczyć naszą idealną wagę dla podanego wzrostu. Od naszej wagi odejmujemy 100  Aby obliczyć idealną wagę wg. wzoru Lorenza możesz skorzystać z naszego kalkulatora. Wybierz płeć oraz podaj swój wzrost. Wzór Lorenza jest wykorzystywany dla osób, których wzrost wynosi powyżej 150cm.",
             }
         };
+
+
+        public static List<CalcDescription> Sex = new List<CalcDescription> {
+            new CalcDescription {
+                ID = 1,
+                Name = "Mężczyzna",
+            },
+            new CalcDescription {
+                ID = 2,
+                Name = "Kobieta",
+            },
+        };
     }
     public class CalcDescription
     {

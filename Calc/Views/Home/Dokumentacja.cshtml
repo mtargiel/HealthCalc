@@ -1,0 +1,167 @@
+﻿@model dynamic
+
+    @{
+        ViewBag.Title = "Dokumentacja";
+        Layout = "../Shared/_Layout.cshtml";
+
+    }
+
+    <h2>Dokumentacja</h2>
+    <p>
+        System wykonany przy użyciu .NET Framework 4.7.2, bilbioteki DEVEXTREME.
+        <br />
+        Skrypty służące do obliczania w kalkulatorze zostały napisane w JavaScript, użyto do tego biblioteki jQuery.
+        Aplikacja jest w pełni <b>responsywna</b>, została zaprojektowana z myślą urządzeniach mobilnych.
+
+        Funkcje służące do pobierania informacji z instancji boxów:
+        <pre>
+
+    function getAccordionInstance() {
+        return $("#accordion-container").dxAccordion("instance");
+    }
+
+    function getSeletedBoxValue() {
+        return $("#calcSelectBox").dxSelectBox("instance").option("value");
+    }
+
+    function getSexBoxValue() {
+        return $("#sexBox").dxSelectBox("instance").option("value");
+    }
+
+    function getWeightBoxValue() {
+        return $("#weightBox").dxNumberBox("instance").option("value");
+    }
+    function getHeightBoxValue() {
+        return $("#heightBox").dxNumberBox("instance").option("value");
+    }
+    function getYearsBoxValue() {
+        return $("#yearsBox").dxNumberBox("instance").option("value");
+    }
+
+    function tagBox_valueChanged(e) {
+        getAccordionInstance().option("selectedIndex", (e.value - 1));
+    }
+    </pre>
+
+        Skrypt służący do wybrania odpowiedniego kalkulatora:
+        <pre>
+    function OnClickCalculate() {
+        var selectedCalc = getSeletedBoxValue();
+        if (selectedCalc === 1) {
+            CalculateBMI();
+        }
+        else if (selectedCalc === 2) {
+            CalculateCPM();
+        }
+        else if (selectedCalc === 3) {
+            CalculateBroce();
+        }
+        else if (selectedCalc === 4) {
+            CalculateLorentz();
+        }
+        else {
+            NoParameters();
+        }
+    }
+
+
+    function NoParameters() {
+        $("#result").html('Nie wybrano kalkulatora');
+    }
+
+    </pre>
+
+        Skrypty wyliczające z odpowiednich wzorów:
+        <pre>
+
+    function CalculateLorentz() {
+        OpenPopup();
+        var sex = getSexBoxValue();
+        var height = getHeightBoxValue();
+
+
+        if (sex === 1) {
+            var text = (height - 100) - (0.25 * (height - 150));
+        } else {
+            var text = (height - 100) - (0.5 * (height - 150));
+        }
+        //wzór Lorentza dla kobiet
+        //należna masa ciała [kg] = wzrost [cm] – 100 – 0,5 x (wzrost [cm] – 150)
+        //wzór Lorentza dla mężczyzn
+        //należna masa ciała [kg] = wzrost [cm] – 100 - 0,25 x (wzrost [cm] – 150)
+        $("#result").html(Math.round(text) + ' kg');
+
+    }
+    function CalculateBroce() {
+        OpenPopup();
+
+        var sex = getSexBoxValue();
+        var height = getHeightBoxValue();
+
+        if (sex === 1) {
+            var text = (height - 100) - ((height - 100) * 0.05);
+        } else {
+            var text = (height - 100) - ((height - 100) * 0.10);
+        }
+
+        $("#result").html(Math.round(text) + ' kg');
+
+    }
+    function CalculateCPM() {
+        OpenPopup();
+
+        var sex = getSexBoxValue();
+        var weight = getWeightBoxValue();
+        var height = getHeightBoxValue();
+        var year = getYearsBoxValue();
+
+        if (sex === 1) {
+            var text = 88.362 + (13.397 * weight) + (4.799 * height) - (5.677 * year);
+        } else {
+            var text = 447.593 + (9.247 * weight) + (3.098 * height) - (4.33 * year);
+        }
+
+
+        $("#result").html(Math.round(text) + ' kcal');
+
+    }
+    function CalculateBMI() {
+        OpenPopup();
+
+
+        var weight = getWeightBoxValue();
+        var height = getHeightBoxValue();
+
+        var resultBMI = (weight / ((height / 100) * (height / 100)));
+
+
+        if (resultBMI < 16)
+            var text = "wygłodzenie";
+        else if (resultBMI >= 16 && resultBMI <= 16.99)
+            var text = "wychudzenie";
+        else if (resultBMI >= 17 && resultBMI <= 18.49)
+            var text = "niedowaga";
+        else if (resultBMI >= 18.5 && resultBMI <= 24.99)
+            var text = "waga prawidłowa";
+        else if (resultBMI >= 25 && resultBMI <= 29.99)
+            var text = "nadwaga";
+        else if (resultBMI >= 30 && resultBMI <= 34.99)
+            var text = "I stopień otyłości";
+        else if (resultBMI >= 35 && resultBMI <= 39.99)
+            var text = "II stopień otyłości";
+        else if (resultBMI > 40)
+            var text = "otyłość skrajna";
+
+        $("#result").html(text);
+    }
+    </pre>
+        
+        Skrypt otwierający popup z wynikami:
+        <pre>
+    function OpenPopup() {
+        var popup = $("#calc-popup").dxPopup("instance");
+        popup.option("contentTemplate", $("#popup-template"));
+        popup.show();
+    }
+    </pre>
+    </p>

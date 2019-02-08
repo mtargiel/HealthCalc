@@ -15,10 +15,26 @@ namespace Calc.Controllers {
         }
 
         [HttpGet]
-        public ActionResult GetData(DataSourceLoadOptions loadOptions)
+        public ActionResult GetDataForAccordion(DataSourceLoadOptions loadOptions)
         {
             return Content(JsonConvert.SerializeObject(DataSourceLoader.Load(SampleData.Companies, loadOptions)),
                 "application/json");
+        }
+        [HttpGet]
+        public ActionResult GetDataForSexSelectBox(DataSourceLoadOptions loadOptions)
+        {
+            return Content(JsonConvert.SerializeObject(DataSourceLoader.Load(SampleData.Sex, loadOptions)),
+                "application/json");
+        }
+
+        public ActionResult Dokumentacja()
+        {
+            return View();
+        }
+
+        public ActionResult Autorzy()
+        {
+            return View();
         }
     }
 }

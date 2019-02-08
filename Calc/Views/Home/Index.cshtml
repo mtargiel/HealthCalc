@@ -1,26 +1,25 @@
-﻿
+﻿@{
+    ViewBag.Title = "Kalkulator";
+    Layout = "../Shared/_Layout.cshtml";
+
+}
 <h2>Kalkulator</h2>
 
 <div>
-    @{
-        string[] sex = { "Mężczyzna", "Kobieta" };
-    }
-    
-    
-    
     @(Html.DevExtreme().Popup()
-          .ID("calc-popup")
-          .ElementAttr("class", "popup")
-          .Width(300)
-          .Height(250)
-          .ShowTitle(true)
-          .Title("Wynik")
-          .Visible(false)
-          .DragEnabled(false)
-          .CloseOnOutsideClick(true)
-          )
-    
-    @using(Html.DevExtreme().NamedTemplate("popup-template")) {
+                  .ID("calc-popup")
+                  .ElementAttr("class", "popup")
+                  .Width(300)
+                  .Height(250)
+                  .ShowTitle(true)
+                  .Title("Wynik")
+                  .Visible(false)
+                  .DragEnabled(false)
+                  .CloseOnOutsideClick(true)
+    )
+
+    @using (Html.DevExtreme().NamedTemplate("popup-template"))
+    {
         <span>
             <div>
                 <p align="center" id="result"></p>
@@ -28,14 +27,17 @@
         </span>
     }
 
-    @(Html.DevExtreme().SelectBox().ID("plecBMI")
-                                          .Placeholder("Płeć")
-                                          .DataSource(sex)
-                                          .Items(i =>
-                                      {
-                                          i.Add().Text("Mężczyzna");
-                                          i.Add().Text("Kobieta");
-                                      }))
+    @(Html.DevExtreme().SelectBox().ID("sexBox")
+                                                  .Placeholder("Płeć")
+                                                  .DataSource(d => d.Mvc().Controller("Home").LoadAction("GetDataForSexSelectBox").Key("ID"))
+                                                  .ValueExpr("ID")
+                                                  .DisplayExpr("Name")
+
+                                                  .Items(i =>
+                                              {
+                                                  i.Add().Text("Mężczyzna");
+                                                  i.Add().Text("Kobieta");
+                                              }))
     <br />
     @(Html.DevExtreme().NumberBox().ID("weightBox").Min(30).Max(300).Placeholder("Masa ciała (kg)").Value(null))
     <br />
@@ -46,39 +48,37 @@
     <div class="row"></div>
     <div class="col-xs-6">
 
-        @{
-            string[] typeCalc = { "Wskaźnik BMI", "Całkowita przemiana materii", "Masa ciała - normalna wg Broca", "Masa ciała idealna wg Lorenza", "Wskaźnik WHR (Bjoerntorp)", "Wysiłek" };
-        }
-        @(Html.DevExtreme().SelectBox().ID("calcSelectBox")
-                              .Placeholder("Kalkulator")
-              .ValueExpr("ID")
-              .DisplayExpr("Name")
-                              .DataSource(d => d.Mvc().Controller("Home").LoadAction("GetData").Key("ID"))
-              .OnValueChanged("tagBox_valueChanged")
+        @(Html.DevExtreme().SelectBox()
+                      .ID("calcSelectBox")
+                      .Placeholder("Kalkulator")
+                      .ValueExpr("ID")
+                      .DisplayExpr("Name")
+                                  .DataSource(d => d.Mvc().Controller("Home").LoadAction("GetDataForAccordion").Key("ID"))
+                      .OnValueChanged("tagBox_valueChanged")
         )
     </div>
     <div class="col-xs-6">
         @(Html.DevExtreme().Button().Text("Oblicz").OnClick("OnClickCalculate"))
     </div>
 
-    <hr/>
+    <hr />
     @(Html.DevExtreme().Accordion()
-                          .ID("accordion-container")
-                          .DataSource(d => d.Mvc().Controller("Home").LoadAction("GetData").Key("ID"))
-                          .AnimationDuration(300)
-                          .Collapsible(false)
-                          .Multiple(true)
-                          .ItemTitleTemplate(@<text><h1><%= Name %></h1></text>)
-                                  .ItemTemplate(@<text>
-                                    <div class="accodion-item">
-                                        <div>
-                                            <p>
-                                                <span><%= Description %></span>
-                                            </p>
-                                        </div>
+                                  .ID("accordion-container")
+                                  .DataSource(d => d.Mvc().Controller("Home").LoadAction("GetDataForAccordion").Key("ID"))
+                                  .AnimationDuration(300)
+                                  .Collapsible(false)
+                                  .Multiple(true)
+                                  .ItemTitleTemplate(@<text><h1><%= Name %></h1></text>)
+                                                .ItemTemplate(@<text>
+                                                    <div class="accodion-item">
+                                                        <div>
+                                                            <p>
+                                                                <span><%= Description %></span>
+                                                            </p>
+                                                        </div>
 
-                                    </div>
-                                </text>)
+                                                    </div>
+                                                </text>)
     )
 </div>
 <script>
@@ -89,6 +89,10 @@
 
     function getSeletedBoxValue() {
         return $("#calcSelectBox").dxSelectBox("instance").option("value");
+    }
+
+    function getSexBoxValue() {
+        return $("#sexBox").dxSelectBox("instance").option("value");
     }
 
     function getWeightBoxValue() {
@@ -102,7 +106,7 @@
     }
 
     function tagBox_valueChanged(e) {
-        getAccordionInstance().option("selectedIndex", (e.value-1));
+        getAccordionInstance().option("selectedIndex", (e.value - 1));
     }
 
     function OnClickCalculate() {
@@ -110,11 +114,18 @@
         if (selectedCalc === 1) {
             CalculateBMI();
         }
-        else if (selectedCalc === 3) {
+        else if (selectedCalc === 2) {
             CalculateCPM();
         }
-
-        NoParameters();
+        else if (selectedCalc === 3) {
+            CalculateBroce();
+        }
+        else if (selectedCalc === 4) {
+            CalculateLorentz();
+        }
+        else {
+            NoParameters();
+        }
     }
 
 
@@ -122,20 +133,55 @@
         $("#result").html('<h3>' + 'Nie wybrano kalkulatora' + '</h3>');
     }
 
+    function CalculateLorentz() {
+        OpenPopup();
+        var sex = getSexBoxValue();
+        var height = getHeightBoxValue();
+
+
+        if (sex === 1) {
+            var text = (height - 100) - (0.25 * (height - 150));
+        } else {
+            var text = (height - 100) - (0.5 * (height - 150));
+        }
+        //wzór Lorentza dla kobiet
+        //należna masa ciała [kg] = wzrost [cm] – 100 – 0,5 x (wzrost [cm] – 150)
+        //wzór Lorentza dla mężczyzn
+        //należna masa ciała [kg] = wzrost [cm] – 100 - 0,25 x (wzrost [cm] – 150)
+        $("#result").html('<h3>' + Math.round(text) + ' kg' + '</h3>');
+
+    }
+    function CalculateBroce() {
+        OpenPopup();
+
+        var sex = getSexBoxValue();
+        var height = getHeightBoxValue();
+
+        if (sex === 1) {
+            var text = (height - 100) - ((height - 100) * 0.05);
+        } else {
+            var text = (height - 100) - ((height - 100) * 0.10);
+        }
+
+        $("#result").html('<h3>' + Math.round(text) + ' kg' + '</h3>');
+
+    }
     function CalculateCPM() {
+        OpenPopup();
+
         var sex = getSexBoxValue();
         var weight = getWeightBoxValue();
         var height = getHeightBoxValue();
         var year = getYearsBoxValue();
 
-        //Wzór na PPM dla mężczyzny
-        //PPM [kcal] = 88,362 + [13,397 × M (kg)] + [4,799 × W (cm)] – [5,677 × L (lata)]
-        //Wzór na PPM dla kobiety
-        //PPM [kcal] = 447,593 + [9,247 × M (kg)] + [3,098 × W (cm)] – [4,33 × L (lata)]
+        if (sex === 1) {
+            var text = 88.362 + (13.397 * weight) + (4.799 * height) - (5.677 * year);
+        } else {
+            var text = 447.593 + (9.247 * weight) + (3.098 * height) - (4.33 * year);
+        }
 
 
-
-        $("#result").html('<h3>' + text + '</h3>');
+        $("#result").html('<h3>' + Math.round(text) + ' kcal' + '</h3>');
 
     }
     function CalculateBMI() {
@@ -144,12 +190,8 @@
 
         var weight = getWeightBoxValue();
         var height = getHeightBoxValue();
-        var year = getYearsBoxValue();
 
-        var newHTML = [];
-        
-
-        var resultBMI = (weight / ((height/100) * (height/100)));
+        var resultBMI = (weight / ((height / 100) * (height / 100)));
 
 
         if (resultBMI < 16)
@@ -169,7 +211,7 @@
         else if (resultBMI > 40)
             var text = "otyłość skrajna";
 
-            $("#result").html('<h3>'+text+'</h3>');
+        $("#result").html('<h3>' + text + '</h3>');
     }
 
     function OpenPopup() {
